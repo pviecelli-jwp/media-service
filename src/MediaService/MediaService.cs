@@ -1,7 +1,5 @@
-﻿using Grpc.Net.Client;
-using JWPlayer.ApiGateway.Services;
+﻿using JWPlayer.ApiGateway.Services;
 using JWPlayer.ApiGateway.Services.Abstractions;
-using JWPlayer.AuthSvc;
 using JWPlayer.Identity;
 using JWPlayer.Outcomes;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using JsonObject = System.Text.Json.Nodes.JsonObject;
 
 namespace MediaService;
 
@@ -28,13 +28,7 @@ public class MediaService : IMediaService
     private readonly ILogger<MediaService> _logger;
     private readonly IRestClientFactory _restClientFactory;
     private readonly IAuthTokenFactory _tokenFactory;
-    protected readonly string? ApiKey;
-    protected readonly string CreateUrl;
-    protected readonly string ActionUrl;
-    protected readonly GrpcChannel _grpcChannel;
-    protected readonly AuthService _authSvc;
-    protected readonly MediaOptions _mediaOptions = new();
-    protected string AuthToken;
+    protected readonly MediaOptions _mediaOptions;
 
     private readonly string _baseUrl;
     private readonly string _sourceUrl;
@@ -45,10 +39,6 @@ public class MediaService : IMediaService
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         AllowTrailingCommas = true,
     };
-
-    private const string MediaSection = "Media";
-    private const string UserKey = "user";
-    private const string PasswordKey = "password";
 
     public MediaService(
         IConfiguration configuration,
@@ -62,19 +52,6 @@ public class MediaService : IMediaService
         _tokenFactory = tokenFactory ?? throw new ArgumentNullException(nameof(tokenFactory));
         _mediaOptions = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        _grpcChannel = GrpcChannel.ForAddress(_mediaOptions.AuthsvcGrpcChannel);
-        _authSvc = new AuthService(_grpcChannel);
-
-        var secrets = configuration.GetSection(_mediaOptions.AuthSecretsSection);
-        ApiKey = secrets[nameof(ApiKey).ToLower()];
-        AuthToken = (ApiKey is not null)
-            ? GetAuthToken(_authSvc, ApiKey)
-            : GetAuthToken(_authSvc, secrets[PasswordKey] ?? string.Empty, secrets[UserKey]);
-
-        CreateUrl = _mediaOptions.CreateUrl;
-        ActionUrl = _mediaOptions.ActionUrl;
         _baseUrl = _mediaOptions.BaseUrl;
         _sourceUrl = _mediaOptions.SourceUrl;
     }
@@ -90,12 +67,12 @@ public class MediaService : IMediaService
 
     public async Task Delete(Alpha siteId, Alpha mediaId)
     {
-        var client = new RestClient(String.Format(ActionUrl, siteId, mediaId));
+        var client = _restClientFactory.Create(_baseUrl);
         var request = await CreateRestRequestAsync(DeleteMedia(siteId, mediaId));
         await client.ExecuteAsync(request);
     }
 
-    public void Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload)
+    public async Task Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload)
     {
         throw new NotImplementedException();
         //var clientUrl = String.Format(ActionUrl, siteId, mediaId) + "reupload/";
@@ -112,32 +89,23 @@ public class MediaService : IMediaService
         //client.ExecuteAsync(request);
     }
 
-    private static string GetAuthToken(AuthService authSvc, string secret, string? user = null)
-    {
-        var authResult = (user is null)
-            ? authSvc.AuthenticateApiKey(secret)
-            : authSvc.LoginUser(user, secret);
-        if (authResult is AuthSuccess success) return success.Jwt;
-        throw new Exception("Authentication failed");
-    }
-
     private static string CreateMediaParams(string metadata)
     {
         //TODO: This code probably needs improvement
 
-        var jsonMetadata = new JObject();
+        JsonObject jsonMetadata;
 
         try
         {
-            jsonMetadata = JObject.Parse(metadata);
+            jsonMetadata = JsonNode.Parse(metadata)?.AsObject() ?? [];
         }
-        catch (Newtonsoft.Json.JsonReaderException)
+        catch (JsonException)
         {
-            jsonMetadata["metadata"] = GetDefaultMetadataJObject();
+            jsonMetadata = new JsonObject { ["metadata"] = GetDefaultMetadataJObject() };
             return jsonMetadata.ToString();
         };
 
-        if (jsonMetadata.ContainsKey("metadata"))
+        if (jsonMetadata["metadata"] != null)
         {
             if (jsonMetadata["metadata"]["title"] == null || jsonMetadata["metadata"]["title"].ToString() == string.Empty)
             {
@@ -164,11 +132,9 @@ public class MediaService : IMediaService
         return request;
     }
 
-    private static JObject GetDefaultMetadataJObject()
-    {
-        return JObject.FromObject(new
+    private static JsonObject GetDefaultMetadataJObject() =>
+        new()
         {
-            title = DateTime.UtcNow.ToString()
-        });
-    }
+            ["title"] = DateTime.UtcNow.ToString()
+        };
 }

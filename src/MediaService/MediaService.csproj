@@ -9,7 +9,6 @@
   <ItemGroup>
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
     <PackageReference Include="JWPlayer.ApiGateway" Version="2.14.0" />
-    <PackageReference Include="JWPlayer.AuthSvc" Version="1.1.0" />
     <PackageReference Include="JWPlayer.Identity" Version="1.2.19" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
