@@ -1,4 +1,5 @@
 ﻿using JWPlayer.Identity;
+using RestSharp;
 
 namespace MediaService
 {

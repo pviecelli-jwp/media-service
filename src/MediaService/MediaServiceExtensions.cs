@@ -1,15 +1,28 @@
 ﻿using JWPlayer.Identity;
-using Newtonsoft.Json.Linq;
+using RestSharp;
+using System.Text.Json;
 
-namespace MediaService
+namespace MediaService;
+
+public static class MediaServiceExtensions
 {
-    public static class MediaServiceExtensions
+    public static Alpha GetMediaId(this IRestResponse response)
     {
-        public static Alpha GetMediaId(this IRestResponse response)
+        var content = JsonDocument.Parse(response.Content);
+        var mediaId = GetJsonPropertyAsString(content.RootElement, "id") ?? throw new InvalidOperationException("There was no Media ID in the Response.");
+        return new Alpha(mediaId);
+    }
+
+
+    private static string? GetJsonPropertyAsString(JsonElement element, string propertyName)
+    {
+        try
         {
-            var content = JObject.Parse(response.Content);
-            var mediaId = content.GetValue("id").ToString();
-            return new Alpha(mediaId);
+            return element.GetProperty(propertyName).GetString() ?? default;
+        }
+        catch
+        {
+            return default;
         }
     }
 }
