@@ -1,4 +1,5 @@
-﻿using JWPlayer.ApiGateway.Services;
+﻿using JWPlayer.ApiGateway.Errors;
+using JWPlayer.ApiGateway.Services;
 using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
 using JWPlayer.Outcomes;
@@ -54,23 +55,62 @@ public class MediaService : IMediaService
         _sourceUrl = _mediaOptions.SourceUrl;
     }
 
-    public async Task<IRestResponse> CreateAsync(Alpha siteId, MediaCreateParams mediaCreateParams)
+    public async Task<Result<MediaObjectSchema, JwErrorResponse>> CreateMediaAsync(Alpha siteId, MediaCreateParams mediaCreateParams)
     {
+        const string RequestDescription = "Creating Media";
         var client = _restClientFactory.Create(_baseUrl);
-        var body = CreateMediaParams(mediaCreateParams);
+        var body = JsonSerializer.Serialize(mediaCreateParams, _jsonOptions);
         var request = await CreateRestRequestAsync(CreateMedia(siteId));
+
         request.AddParameter("application/json", body, ParameterType.RequestBody);
-        return await client.ExecuteAsync(request);
+
+        _logger.LogTrace(RequestDescription);
+        var response = await client.ExecuteAsync(request);
+
+        return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
     }
 
-    public async Task Delete(Alpha siteId, Alpha mediaId)
+    public async Task<Result<MediaObjectSchema, JwErrorResponse>> GetMediaAsync(Alpha siteId, Alpha mediaId)
     {
+        const string RequestDescription = "Get Media";
+        var client = _restClientFactory.Create(_baseUrl);
+        var request = await CreateRestRequestAsync(GetMedia(siteId, mediaId));
+
+        _logger.LogTrace(RequestDescription);
+        var response = await client.ExecuteAsync(request);
+
+        return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
+    }
+
+    public async Task<Result<MediaObjectSchema, JwErrorResponse>> UpdateMediaAsync(Alpha siteId, Alpha mediaId, MediaUpdateParams mediaUpdateParams)
+    {
+        const string RequestDescription = "Update Media";
+        var client = _restClientFactory.Create(_baseUrl);
+        var body = JsonSerializer.Serialize(mediaUpdateParams, _jsonOptions);
+        var request = await CreateRestRequestAsync(UpdateMedia(siteId, mediaId));
+
+        request.AddParameter("application/json", body, ParameterType.RequestBody);
+
+        _logger.LogTrace(RequestDescription);
+        var response = await client.ExecuteAsync(request);
+
+        return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
+    }
+
+
+    public async Task<Result<JwErrorResponse>> DeleteMediaAsync(Alpha siteId, Alpha mediaId)
+    {
+        const string RequestDescription = "Delete Media";
         var client = _restClientFactory.Create(_baseUrl);
         var request = await CreateRestRequestAsync(DeleteMedia(siteId, mediaId));
-        await client.ExecuteAsync(request);
+
+        _logger.LogTrace(RequestDescription);
+        var response = await client.ExecuteAsync(request);
+
+        return DeserializeOrError(response, RequestDescription);
     }
 
-    public async Task<IRestResponse> Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload)
+    public async Task<IRestResponse> ReuploadMediaAsync(Alpha siteId, Alpha mediaId, MediaUpload upload)
     {
         var client = _restClientFactory.Create(_baseUrl);
         var request = await CreateRestRequestAsync(ReuploadMedia(siteId, mediaId));
@@ -79,18 +119,6 @@ public class MediaService : IMediaService
         return await client.ExecuteAsync(request);
     }
 
-    private string CreateMediaParams(MediaCreateParams mediaCreateParams)
-    {
-        if (mediaCreateParams.Metadata != null)
-        {
-            if (mediaCreateParams.Metadata.Value.Title == null || mediaCreateParams.Metadata.Value.Title == string.Empty)
-                mediaCreateParams.Metadata = mediaCreateParams.Metadata.Value with { Title = DateTime.UtcNow.ToString() };
-        }
-        else
-            mediaCreateParams.Metadata = GetDefaultMetadataJObject();
-
-        return JsonSerializer.Serialize(mediaCreateParams, _jsonOptions);
-    }
     private async Task<RestRequest> CreateRestRequestAsync(Endpoint endpoint)
     {
         var tokenResult = await _tokenFactory.GetAuthTokenAsync();
@@ -104,9 +132,63 @@ public class MediaService : IMediaService
         return request;
     }
 
-    private static MediaMetadata GetDefaultMetadataJObject() =>
-        new()
+    /// <summary>
+    /// Helper method for deserializing a <paramref name="response"/> content, or producing an error using <see cref="Result{T, E}"/>.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="response"></param>
+    /// <param name="requestDesc">Used to generate appropriate logs, see additional remarks.
+    /// <para> Trace: "{<paramref name="requestDesc"/>} was successful"</para>
+    /// <para> Deserialization Error: "{<paramref name="requestDesc"/>}, status code {...}, response content {...}"</para>
+    /// </param>
+    private Result<T, JwErrorResponse> DeserializeOrError<T>(IRestResponse response, string requestDesc)
+    {
+        if (response.IsSuccessful)
         {
-            Title = DateTime.UtcNow.ToString()
-        };
+            _logger.LogTrace("{Request} was successful.", requestDesc);
+
+            try
+            {
+                var obj = JsonSerializer.Deserialize<T>(response.Content);
+                if (obj != null) return obj;
+                throw new Exception(
+                    $"Failed to deserialize {typeof(T).Name}, resulted in null for API response {response.Content}'");
+            }
+            catch (Exception ex)
+            {
+                return HandleError(response, requestDesc, ex);
+            }
+        }
+
+        return HandleError(response, requestDesc);
+    }
+
+    private Result<JwErrorResponse> DeserializeOrError(IRestResponse response, string requestDesc)
+    {
+        if (response.IsSuccessful)
+        {
+            _logger.LogTrace("{Request} was successful.", requestDesc);
+            return Result.Ok<JwErrorResponse>();
+        }
+
+        return HandleError(response, requestDesc);
+    }
+
+    /// <summary>
+    /// Helper method for producing an error using <see cref="Result{T, E}"/>.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="response"></param>
+    /// <param name="requestDesc">Used to generate appropriate logs, see additional remarks.
+    /// <para> Deserialization Error: "{<paramref name="requestDesc"/>}, status code {...}, response content {...}"</para>
+    /// </param>
+    /// <param name="exception">Exception to be logged, in case there is one.</param>
+    private JwErrorResponse HandleError(IRestResponse response, string requestDesc, Exception? exception = null)
+    {
+        var isJwError = response.Content.TryGetJwErrorResponse(out var err);
+        if (!isJwError)
+            _logger.LogError(exception, "{RequestDesc} failed with status code {StatusCode}, response content: {ResponseContent}", requestDesc, response.StatusCode, response.Content);
+
+        return err;
+    }
 }

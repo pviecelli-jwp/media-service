@@ -2,13 +2,8 @@
 
 namespace MediaService.Model;
 
-public class MediaRelationshipId
+public class MediaRelationshipId(string id)
 {
     [JsonPropertyName("id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string Id;
-
-    public MediaRelationshipId(string id)
-    {
-        Id = id;
-    }
+    public string Id = id;
 }
