@@ -1,15 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
-namespace MediaService
+namespace MediaService.Model;
+
+public class MediaRelationshipId
 {
-    public class MediaRelationshipId
-    {
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
-        public string Id;
+    [JsonPropertyName("id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string Id;
 
-        public MediaRelationshipId(string id)
-        {
-            Id = id;
-        }
+    public MediaRelationshipId(string id)
+    {
+        Id = id;
     }
 }

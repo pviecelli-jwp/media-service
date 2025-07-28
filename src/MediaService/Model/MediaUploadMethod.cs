@@ -1,10 +1,9 @@
-﻿namespace MediaService
+﻿namespace MediaService.Model;
+
+public class MediaUploadMethod
 {
-    public class MediaUploadMethod
-    {
-        public const string Direct = "direct";
-        public const string External = "external";
-        public const string Fetch = "fetch";
-        public const string Multipart = "multipart";
-    }
+    public const string Direct = "direct";
+    public const string External = "external";
+    public const string Fetch = "fetch";
+    public const string Multipart = "multipart";
 }

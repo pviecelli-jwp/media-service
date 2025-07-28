@@ -1,43 +1,42 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
-namespace MediaService
+namespace MediaService.Model;
+
+public record struct MediaUpload
 {
-    public record struct MediaUpload
-    {
-        /// <summary>
-        /// Upload method <see cref="MediaUploadMethod"/>
-        /// </summary>
-        [JsonProperty("method")]
-        public string Method { get; set; }
+    /// <summary>
+    /// Upload method <see cref="MediaUploadMethod"/>
+    /// </summary>
+    [JsonPropertyName("method")]
+    public string Method { get; set; }
 
-        /// <summary>
-        /// MIME type <see cref="MediaUploadMimeType"/> for the uploaded media, required for the external upload method
-        /// </summary>
-        [JsonProperty("mime_type", NullValueHandling = NullValueHandling.Ignore)]
-        public string MimeType { get; set; }
+    /// <summary>
+    /// MIME type <see cref="MediaUploadMimeType"/> for the uploaded media, required for the external upload method
+    /// </summary>
+    [JsonPropertyName("mime_type"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string MimeType { get; set; }
 
-        /// <summary>
-        /// URL of the external media, required for the external upload method
-        /// </summary>
-        [JsonProperty("source_url", NullValueHandling = NullValueHandling.Ignore)]
-        public string SourceUrl { get; set; }
+    /// <summary>
+    /// URL of the external media, required for the external upload method
+    /// </summary>
+    [JsonPropertyName("source_url"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string SourceUrl { get; set; }
 
-        /// <summary>
-        /// URL of the media to fetch
-        /// </summary>
-        [JsonProperty("download_url", NullValueHandling = NullValueHandling.Ignore)]
-        public string DownloadUrl { get; set; }
+    /// <summary>
+    /// URL of the media to fetch
+    /// </summary>
+    [JsonPropertyName("download_url"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string DownloadUrl { get; set; }
 
-        /// <summary>
-        /// Starting point to trim the video, not applicable to the external upload method
-        /// </summary>
-        [JsonProperty("trim_in_point", NullValueHandling = NullValueHandling.Ignore)]
-        public string TrimInPoint { get; set; }
+    /// <summary>
+    /// Starting point to trim the video, not applicable to the external upload method
+    /// </summary>
+    [JsonPropertyName("trim_in_point"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string TrimInPoint { get; set; }
 
-        /// <summary>
-        /// Ending point to trim the video, not applicable to the external upload method
-        /// </summary>
-        [JsonProperty("trim_out_point", NullValueHandling = NullValueHandling.Ignore)]
-        public string TrimOutPoint { get; set; }
-    }
+    /// <summary>
+    /// Ending point to trim the video, not applicable to the external upload method
+    /// </summary>
+    [JsonPropertyName("trim_out_point"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string TrimOutPoint { get; set; }
 }

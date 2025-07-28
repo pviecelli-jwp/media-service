@@ -1,15 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
-namespace MediaService
+namespace MediaService.Model;
+
+public class MediaRelationships
 {
-    public class MediaRelationships
-    {
-        [JsonProperty("protection_rule", NullValueHandling = NullValueHandling.Ignore)]
-        public MediaRelationshipId ProtectionRule;
+    [JsonPropertyName("protection_rule"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MediaRelationshipId ProtectionRule;
 
-        public MediaRelationships(string protectionRuleId)
-        {
-            ProtectionRule = new MediaRelationshipId(protectionRuleId);
-        }
+    public MediaRelationships(string protectionRuleId)
+    {
+        ProtectionRule = new MediaRelationshipId(protectionRuleId);
     }
 }

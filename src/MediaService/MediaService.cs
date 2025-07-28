@@ -2,6 +2,7 @@
 using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
 using JWPlayer.Outcomes;
+using MediaService.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

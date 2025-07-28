@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
-namespace MediaService
+namespace MediaService.Model
 {
     public record struct MediaCreateParams
     {
-        [JsonProperty("upload", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("upload"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public MediaUpload? Upload { get; set; }
-        [JsonProperty("metadata", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("metadata"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public MediaMetadata? Metadata { get; set; }
-        [JsonProperty("relationships", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("relationships"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public MediaRelationships? Relationships { get; set; }
     }
 }
