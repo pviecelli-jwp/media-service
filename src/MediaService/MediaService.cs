@@ -3,13 +3,10 @@ using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
 using JWPlayer.Outcomes;
 using MediaService.Model;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using JsonObject = System.Text.Json.Nodes.JsonObject;
 
 namespace MediaService;
 
@@ -25,6 +22,7 @@ public class MediaService : IMediaService
     internal static Endpoint CaptureMedia(Alpha siteId, Alpha mediaId) => new($"internal/v2/sites/{siteId}/media/{mediaId}/live_broadcast_capture/", Method.PUT);
     internal static Endpoint UpdateMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/", Method.PATCH);
     internal static Endpoint CreateClip(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast_clip/", Method.POST);
+    internal static Endpoint ReuploadMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/reupload/", Method.PUT);
 
     private readonly ILogger<MediaService> _logger;
     private readonly IRestClientFactory _restClientFactory;
@@ -42,7 +40,6 @@ public class MediaService : IMediaService
     };
 
     public MediaService(
-        IConfiguration configuration,
         ILogger<MediaService> logger,
         IOptions<MediaOptions> options,
         IRestClientFactory restClientFactory,
@@ -57,10 +54,10 @@ public class MediaService : IMediaService
         _sourceUrl = _mediaOptions.SourceUrl;
     }
 
-    public async Task<IRestResponse> CreateAsync(Alpha siteId, string metadata)
+    public async Task<IRestResponse> CreateAsync(Alpha siteId, MediaCreateParams mediaCreateParams)
     {
         var client = _restClientFactory.Create(_baseUrl);
-        var body = CreateMediaParams(metadata);
+        var body = CreateMediaParams(mediaCreateParams);
         var request = await CreateRestRequestAsync(CreateMedia(siteId));
         request.AddParameter("application/json", body, ParameterType.RequestBody);
         return await client.ExecuteAsync(request);
@@ -73,53 +70,27 @@ public class MediaService : IMediaService
         await client.ExecuteAsync(request);
     }
 
-    public async Task Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload)
+    public async Task<IRestResponse> Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload)
     {
-        throw new NotImplementedException();
-        //var clientUrl = String.Format(ActionUrl, siteId, mediaId) + "reupload/";
-        //var client = new RestClient(clientUrl);
-
-        //var mediaReupload = new MediaReuploadParams
-        //{
-        //    Upload = upload
-        //};
-        //var body = JsonConvert.SerializeObject(mediaReupload);
-        //var request = await CreateRestRequestAsync(Method.PUT);
-        //request.AddParameter("application/json", body, ParameterType.RequestBody);
-
-        //client.ExecuteAsync(request);
+        var client = _restClientFactory.Create(_baseUrl);
+        var request = await CreateRestRequestAsync(ReuploadMedia(siteId, mediaId));
+        var body = JsonSerializer.Serialize(upload, _jsonOptions);
+        request.AddParameter("application/json", body, ParameterType.RequestBody);
+        return await client.ExecuteAsync(request);
     }
 
-    private static string CreateMediaParams(string metadata)
+    private string CreateMediaParams(MediaCreateParams mediaCreateParams)
     {
-        //TODO: This code probably needs improvement
-
-        JsonObject jsonMetadata;
-
-        try
+        if (mediaCreateParams.Metadata != null)
         {
-            jsonMetadata = JsonNode.Parse(metadata)?.AsObject() ?? [];
-        }
-        catch (JsonException)
-        {
-            jsonMetadata = new JsonObject { ["metadata"] = GetDefaultMetadataJObject() };
-            return jsonMetadata.ToString();
-        };
-
-        if (jsonMetadata["metadata"] != null)
-        {
-            if (jsonMetadata["metadata"]["title"] == null || jsonMetadata["metadata"]["title"].ToString() == string.Empty)
-            {
-                jsonMetadata["metadata"]["title"] = DateTime.UtcNow.ToString();
-            }
+            if (mediaCreateParams.Metadata.Value.Title == null || mediaCreateParams.Metadata.Value.Title == string.Empty)
+                mediaCreateParams.Metadata = mediaCreateParams.Metadata.Value with { Title = DateTime.UtcNow.ToString() };
         }
         else
-        {
-            jsonMetadata["metadata"] = GetDefaultMetadataJObject();
-        }
-        return jsonMetadata.ToString();
-    }
+            mediaCreateParams.Metadata = GetDefaultMetadataJObject();
 
+        return JsonSerializer.Serialize(mediaCreateParams, _jsonOptions);
+    }
     private async Task<RestRequest> CreateRestRequestAsync(Endpoint endpoint)
     {
         var tokenResult = await _tokenFactory.GetAuthTokenAsync();
@@ -133,9 +104,9 @@ public class MediaService : IMediaService
         return request;
     }
 
-    private static JsonObject GetDefaultMetadataJObject() =>
+    private static MediaMetadata GetDefaultMetadataJObject() =>
         new()
         {
-            ["title"] = DateTime.UtcNow.ToString()
+            Title = DateTime.UtcNow.ToString()
         };
 }

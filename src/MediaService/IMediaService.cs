@@ -6,9 +6,9 @@ namespace MediaService
 {
     public interface IMediaService
     {
-        Task<IRestResponse> CreateAsync(Alpha siteId, string metadata);
+        Task<IRestResponse> CreateAsync(Alpha siteId, MediaCreateParams mediaCreateParams);
         Task Delete(Alpha siteId, Alpha mediaId);
 
-        Task Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload);
+        Task<IRestResponse> Reupload(Alpha siteId, Alpha mediaId, MediaUpload upload);
     }
 }
