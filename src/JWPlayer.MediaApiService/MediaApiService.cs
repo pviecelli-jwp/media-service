@@ -2,16 +2,16 @@
 using JWPlayer.ApiGateway.Services;
 using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
+using JWPlayer.MediaApiService.Model;
 using JWPlayer.Outcomes;
-using MediaService.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using System.Text.Json;
 
-namespace MediaService;
+namespace JWPlayer.MediaApiService;
 
-public class MediaService : IMediaService
+public class MediaApiService : IMediaApiService
 {
     internal static Endpoint CreateBroadcastLiveMedia(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast/", Method.PUT);
     internal static Endpoint CreateMedia(Alpha siteId) => new($"v2/sites/{siteId}/media/", Method.POST);
@@ -25,10 +25,10 @@ public class MediaService : IMediaService
     internal static Endpoint CreateClip(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast_clip/", Method.POST);
     internal static Endpoint ReuploadMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/reupload/", Method.PUT);
 
-    private readonly ILogger<MediaService> _logger;
+    private readonly ILogger<MediaApiService> _logger;
     private readonly IRestClientFactory _restClientFactory;
     private readonly IAuthTokenFactory _tokenFactory;
-    protected readonly MediaOptions _mediaOptions;
+    protected readonly MediaApiOptions _mediaOptions;
 
     private readonly string _baseUrl;
     private readonly string _sourceUrl;
@@ -40,9 +40,9 @@ public class MediaService : IMediaService
         AllowTrailingCommas = true,
     };
 
-    public MediaService(
-        ILogger<MediaService> logger,
-        IOptions<MediaOptions> options,
+    public MediaApiService(
+        ILogger<MediaApiService> logger,
+        IOptions<MediaApiOptions> options,
         IRestClientFactory restClientFactory,
         IAuthTokenFactory tokenFactory)
     {

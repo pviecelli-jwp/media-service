@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MediaService.Model;
+namespace JWPlayer.MediaApiService.Model;
 
 public record struct MediaCreateParams
 {

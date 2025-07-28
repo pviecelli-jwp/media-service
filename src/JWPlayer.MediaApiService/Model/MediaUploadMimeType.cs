@@ -1,4 +1,4 @@
-﻿namespace MediaService.Model;
+﻿namespace JWPlayer.MediaApiService.Model;
 
 public class MediaUploadMimeType
 {

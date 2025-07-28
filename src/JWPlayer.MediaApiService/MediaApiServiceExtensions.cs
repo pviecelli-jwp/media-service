@@ -2,9 +2,9 @@
 using RestSharp;
 using System.Text.Json;
 
-namespace MediaService;
+namespace JWPlayer.MediaApiService;
 
-public static class MediaServiceExtensions
+public static class MediaApiServiceExtensions
 {
     public static Alpha GetMediaId(this IRestResponse response)
     {
