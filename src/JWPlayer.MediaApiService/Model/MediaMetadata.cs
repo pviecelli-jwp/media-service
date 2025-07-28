@@ -16,7 +16,7 @@ public record MediaMetadata
     /// This can only be defined manually for externally hosted media.The duration is set automatically for hosted media.
     /// </summary>
     [JsonPropertyName("duration"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? Duration { get; set; }
+    public double? Duration { get; set; }
 
     /// <summary>
     /// URL of the page where this media is published

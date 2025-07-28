@@ -1,0 +1,6 @@
+@JWPlayer.MediaApiService.Examples_HostAddress = http://localhost:5053
+
+GET {{JWPlayer.MediaApiService.Examples_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

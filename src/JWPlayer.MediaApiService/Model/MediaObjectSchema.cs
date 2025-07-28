@@ -44,7 +44,7 @@ public class MediaObjectSchema : ObjectSchema<MediaMetadata>//, IEquatable<Media
     /// Length of the media in seconds
     /// </summary>
     [JsonPropertyName("duration"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public int? Duration { get; set; }
+    public double? Duration { get; set; }
 
     /// <summary>
     /// Starting point to trim the video
