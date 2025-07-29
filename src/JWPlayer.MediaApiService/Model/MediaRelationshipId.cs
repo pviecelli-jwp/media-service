@@ -4,6 +4,6 @@ namespace JWPlayer.MediaApiService.Model;
 
 public class MediaRelationshipId(string id)
 {
-    [JsonPropertyName("id"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("id")]
     public string Id = id;
 }

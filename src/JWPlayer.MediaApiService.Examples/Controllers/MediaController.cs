@@ -1,12 +1,20 @@
 ﻿using JWPlayer.ApiGateway.Errors;
 using JWPlayer.MediaApiService.Model;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace JWPlayer.MediaApiService.Examples.Controllers;
 public class MediaController(ILogger<MediaController> logger, IMediaApiService mediaApiService) : Controller
 {
     private readonly ILogger<MediaController> _logger = logger;
     private readonly IMediaApiService _mediaApiService = mediaApiService;
+    private readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        AllowTrailingCommas = true,
+    };
 
     [HttpPost("sites/{siteId}/")]
     public async Task<IActionResult> CreateMedia(string siteId, [FromBody] MediaCreateParams mediaCreateParams)
@@ -39,5 +47,12 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
         return result.IsOk
             ? Ok()
             : result.Error.ToObjectResult();
+    }
+
+    [HttpPut("serialise")]
+    public IActionResult SerialiseParams([FromBody] MediaCreateParams parameters)
+    {
+        var serialized = JsonSerializer.Serialize(parameters, _jsonOptions);
+        return Ok(serialized);
     }
 }

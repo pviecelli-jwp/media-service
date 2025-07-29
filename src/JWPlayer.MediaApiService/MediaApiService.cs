@@ -31,10 +31,10 @@ public class MediaApiService : IMediaApiService
     protected readonly MediaApiOptions _mediaOptions;
 
     private readonly string _baseUrl;
-    private readonly string _sourceUrl;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         AllowTrailingCommas = true,
@@ -52,7 +52,6 @@ public class MediaApiService : IMediaApiService
         _mediaOptions = options?.Value ?? throw new ArgumentNullException(nameof(options));
 
         _baseUrl = _mediaOptions.BaseUrl;
-        _sourceUrl = _mediaOptions.SourceUrl;
     }
 
     public async Task<Result<MediaObjectSchema, JwErrorResponse>> CreateMediaAsync(Alpha siteId, MediaCreateParams mediaCreateParams)

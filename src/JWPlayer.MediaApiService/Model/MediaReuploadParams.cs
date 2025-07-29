@@ -4,6 +4,6 @@ namespace JWPlayer.MediaApiService.Model;
 
 public record struct MediaReuploadParams
 {
-    [JsonPropertyName("upload"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("upload")]
     public MediaUpload Upload { get; set; }
 }

@@ -4,6 +4,6 @@ namespace JWPlayer.MediaApiService.Model;
 
 public class MediaRelationships(string protectionRuleId)
 {
-    [JsonPropertyName("protection_rule"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("protection_rule")]
     public MediaRelationshipId ProtectionRule = new(protectionRuleId);
 }
