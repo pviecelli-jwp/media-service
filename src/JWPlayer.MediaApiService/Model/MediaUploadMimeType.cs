@@ -1,16 +1,42 @@
-﻿namespace JWPlayer.MediaApiService.Model;
+﻿using JWPlayer.MediaApiService.Extensions;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
-public class MediaUploadMimeType
+namespace JWPlayer.MediaApiService.Model;
+
+[JsonConverter(typeof(EnumerationConverter<MediaUploadMimeType>))]
+public enum MediaUploadMimeType
 {
-    public const string VideoMp4 = "video/mp4";
-    public const string VideoWebm = "video/webm";
-    public const string VideoFlv = "video/flv";
-    public const string AudioAac = "audio/aac";
-    public const string AudioMpeg = "audio/mpeg";
-    public const string AudioOgg = "audio/ogg";
-    public const string ApplicationVndAppleMpegUrl = "application/vnd.apple.mpegurl";
-    public const string ApplicationSmilXml = "application/smil+xml";
-    public const string ApplicationDashXml = "application/dash+xml";
-    public const string VideoFlash = "video/flash";
-    public const string VideoXYoutube = "video/x-youtube";
+    [EnumMember(Value = "video/mp4")]
+    VideoMp4,
+
+    [EnumMember(Value = "video/webm")]
+    VideoWebm,
+
+    [EnumMember(Value = "video/flv")]
+    VideoFlv,
+
+    [EnumMember(Value = "audio/aac")]
+    AudioAac,
+
+    [EnumMember(Value = "audio/mpeg")]
+    AudioMpeg,
+
+    [EnumMember(Value = "audio/ogg")]
+    AudioOgg,
+
+    [EnumMember(Value = "application/vnd.apple.mpegurl")]
+    ApplicationVndAppleMpegUrl,
+
+    [EnumMember(Value = "application/smil+xml")]
+    ApplicationSmilXml,
+
+    [EnumMember(Value = "application/dash+xml")]
+    ApplicationDashXml,
+
+    [EnumMember(Value = "video/flash")]
+    VideoFlash,
+
+    [EnumMember(Value = "video/x-youtube")]
+    VideoXYoutube
 }

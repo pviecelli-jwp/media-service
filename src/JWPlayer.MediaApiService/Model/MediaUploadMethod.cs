@@ -1,9 +1,18 @@
-﻿namespace JWPlayer.MediaApiService.Model;
+﻿using JWPlayer.MediaApiService.Extensions;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
-public class MediaUploadMethod
+namespace JWPlayer.MediaApiService.Model;
+
+[JsonConverter(typeof(EnumerationConverter<MediaUploadMethod>))]
+public enum MediaUploadMethod
 {
-    public const string Direct = "direct";
-    public const string External = "external";
-    public const string Fetch = "fetch";
-    public const string Multipart = "multipart";
+    [EnumMember(Value = "direct")]
+    Direct,
+    [EnumMember(Value = "external")]
+    External,
+    [EnumMember(Value = "fetch")]
+    Fetch,
+    [EnumMember(Value = "multipart")]
+    Multipart,
 }
