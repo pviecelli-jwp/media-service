@@ -38,6 +38,16 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
             : result.Error.ToObjectResult();
     }
 
+    [HttpGet("sites/{siteId}/media")]
+    public async Task<IActionResult> GetAllMedias(string siteId, [FromQuery] int page = 1, [FromQuery] int pageLength = 10, [FromQuery] string? q = null, [FromQuery] string? sort = null)
+    {
+        _logger.LogInformation("Getting all media from site {SiteId} with page {Page}, pageLength {PageLength}, query {Q}, sort {Sort}", siteId, page, pageLength, q, sort);
+        var result = await _mediaApiService.GetAllMediasAsync(siteId, page, pageLength, q, sort);
+        return result.IsOk
+            ? Ok(result.Value)
+            : result.Error.ToObjectResult();
+    }
+
     [HttpDelete("sites/{siteId}/media/{mediaId}")]
     public async Task<IActionResult> DeleteMedia(string siteId, string mediaId)
     {

@@ -16,6 +16,7 @@ public class MediaApiService : IMediaApiService
     internal static Endpoint CreateBroadcastLiveMedia(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast/", Method.PUT);
     internal static Endpoint CreateMedia(Alpha siteId) => new($"v2/sites/{siteId}/media/", Method.POST);
     internal static Endpoint GetMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/", Method.GET);
+    internal static Endpoint GetAllMedia(Alpha siteId) => new($"v2/sites/{siteId}/media/", Method.GET);
     internal static Endpoint DeleteMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/", Method.DELETE);
     internal static Endpoint EnableDrmOnExternalMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/enable_drm_on_external_media", Method.PUT);
     internal static Endpoint IsDrmEnabled(Alpha siteId) => new($"v2/sites/{siteId}/is_drm_enabled", Method.GET);
@@ -79,6 +80,18 @@ public class MediaApiService : IMediaApiService
         var response = await client.ExecuteAsync(request);
 
         return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
+    }
+
+    public async Task<Result<MediaCollectionSchema, JwErrorResponse>> GetAllMediasAsync(Alpha siteId, int? page, int? pageLength, string? q, string? sort)
+    {
+        const string RequestDescription = "Get All Media";
+        var client = _restClientFactory.Create(_baseUrl);
+        var request = await CreateRestRequestAsync(GetAllMedia(siteId));
+
+        _logger.LogTrace(RequestDescription);
+        var response = await client.ExecuteAsync(request);
+
+        return DeserializeOrError<MediaCollectionSchema>(response, RequestDescription);
     }
 
     public async Task<Result<MediaObjectSchema, JwErrorResponse>> UpdateMediaAsync(Alpha siteId, Alpha mediaId, MediaUpdateParams mediaUpdateParams)
