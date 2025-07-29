@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace JWPlayer.MediaApiService.Model;
 
-public record struct MediaUpload
+public struct MediaUpload
 {
     /// <summary>
     /// Upload method <see cref="MediaUploadMethod"/>

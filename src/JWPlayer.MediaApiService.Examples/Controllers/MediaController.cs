@@ -1,5 +1,5 @@
 ﻿using JWPlayer.ApiGateway.Errors;
-using JWPlayer.MediaApiService.Model;
+using JWPlayer.MediaApiService.Requests;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -17,9 +17,11 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
     };
 
     [HttpPost("sites/{siteId}/")]
-    public async Task<IActionResult> CreateMedia(string siteId, [FromBody] MediaCreateParams mediaCreateParams)
+    public async Task<IActionResult> CreateMedia(string siteId, [FromBody] MediaCreateParameters mediaCreateParams)
     {
         _logger.LogInformation("Creating media with parameters: {@MediaCreateParams}", mediaCreateParams);
+
+        var test = new MediaCreateParameters();
 
         var result = await _mediaApiService.CreateMediaAsync(siteId, mediaCreateParams);
         return result.IsOk
@@ -60,7 +62,7 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
     }
 
     [HttpPut("serialise")]
-    public IActionResult SerialiseParams([FromBody] MediaCreateParams parameters)
+    public IActionResult SerialiseParams([FromBody] MediaCreateParameters parameters)
     {
         var serialized = JsonSerializer.Serialize(parameters, _jsonOptions);
         return Ok(serialized);

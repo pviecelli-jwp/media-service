@@ -1,4 +1,4 @@
-﻿using JWPlayer.MediaApiService.Extensions;
+﻿using JWPlayer.MediaApiService.Utils;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 

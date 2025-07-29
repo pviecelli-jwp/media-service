@@ -3,6 +3,8 @@ using JWPlayer.ApiGateway.Services;
 using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
 using JWPlayer.MediaApiService.Model;
+using JWPlayer.MediaApiService.Requests;
+using JWPlayer.MediaApiService.Resources;
 using JWPlayer.Outcomes;
 using Microsoft.Extensions.Options;
 using RestSharp;
@@ -51,7 +53,7 @@ public class MediaApiService : IMediaApiService
         _baseUrl = _mediaOptions.BaseUrl;
     }
 
-    public async Task<Result<MediaObjectSchema, JwErrorResponse>> CreateMediaAsync(Alpha siteId, MediaCreateParams mediaCreateParams)
+    public async Task<Result<MediaObjectSchema, JwErrorResponse>> CreateMediaAsync(Alpha siteId, MediaCreateParameters mediaCreateParams)
     {
         const string RequestDescription = "Creating Media";
         var client = _restClientFactory.Create(_baseUrl);
