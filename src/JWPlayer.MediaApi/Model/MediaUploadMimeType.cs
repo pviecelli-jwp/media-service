@@ -1,8 +1,8 @@
-﻿using JWPlayer.MediaApiService.Utils;
+﻿using JWPlayer.MediaApi.Utils;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace JWPlayer.MediaApiService.Model;
+namespace JWPlayer.MediaApi.Model;
 
 [JsonConverter(typeof(EnumerationConverter<MediaUploadMimeType>))]
 public enum MediaUploadMimeType

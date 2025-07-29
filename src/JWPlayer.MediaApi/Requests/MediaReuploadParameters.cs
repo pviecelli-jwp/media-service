@@ -1,7 +1,7 @@
-﻿using JWPlayer.MediaApiService.Model;
+﻿using JWPlayer.MediaApi.Model;
 using System.Text.Json.Serialization;
 
-namespace JWPlayer.MediaApiService.Requests;
+namespace JWPlayer.MediaApi.Requests;
 
 public struct MediaReuploadParameters
 {

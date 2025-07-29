@@ -1,13 +1,14 @@
 ﻿using JWPlayer.ApiGateway.Errors;
-using JWPlayer.MediaApiService.Requests;
+using JWPlayer.MediaApi.Requests;
+using JWPlayer.MediaApi.Resources;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
-namespace JWPlayer.MediaApiService.Examples.Controllers;
-public class MediaController(ILogger<MediaController> logger, IMediaApiService mediaApiService) : Controller
+namespace JWPlayer.MediaApi.Examples.Controllers;
+public class MediaController(ILogger<MediaController> logger, IMediaResource mediaResource) : Controller
 {
     private readonly ILogger<MediaController> _logger = logger;
-    private readonly IMediaApiService _mediaApiService = mediaApiService;
+    private readonly IMediaResource _mediaResource = mediaResource;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -21,9 +22,7 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
     {
         _logger.LogInformation("Creating media with parameters: {@MediaCreateParams}", mediaCreateParams);
 
-        var test = new MediaCreateParameters();
-
-        var result = await _mediaApiService.CreateMediaAsync(siteId, mediaCreateParams);
+        var result = await _mediaResource.CreateMediaAsync(siteId, mediaCreateParams);
         return result.IsOk
             ? Ok(result.Value)
             : result.Error.ToObjectResult();
@@ -34,7 +33,7 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
     {
         _logger.LogInformation("Getting media {MediaId} from site {SiteId}", mediaId, siteId);
 
-        var result = await _mediaApiService.GetMediaAsync(siteId, mediaId);
+        var result = await _mediaResource.GetMediaAsync(siteId, mediaId);
         return result.IsOk
             ? Ok(result.Value)
             : result.Error.ToObjectResult();
@@ -44,7 +43,7 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
     public async Task<IActionResult> GetAllMedias(string siteId, [FromQuery] int page = 1, [FromQuery] int pageLength = 10, [FromQuery] string? q = null, [FromQuery] string? sort = null)
     {
         _logger.LogInformation("Getting all media from site {SiteId} with page {Page}, pageLength {PageLength}, query {Q}, sort {Sort}", siteId, page, pageLength, q, sort);
-        var result = await _mediaApiService.GetAllMediasAsync(siteId, page, pageLength, q, sort);
+        var result = await _mediaResource.GetAllMediasAsync(siteId, page, pageLength, q, sort);
         return result.IsOk
             ? Ok(result.Value)
             : result.Error.ToObjectResult();
@@ -55,7 +54,7 @@ public class MediaController(ILogger<MediaController> logger, IMediaApiService m
     {
         _logger.LogInformation("Getting media {MediaId} from site {SiteId}", mediaId, siteId);
 
-        var result = await _mediaApiService.DeleteMediaAsync(siteId, mediaId);
+        var result = await _mediaResource.DeleteMediaAsync(siteId, mediaId);
         return result.IsOk
             ? Ok()
             : result.Error.ToObjectResult();

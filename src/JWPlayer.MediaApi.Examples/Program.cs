@@ -1,7 +1,8 @@
 using JWPlayer.ApiGateway.Services;
 using JWPlayer.ApiGateway.Services.Abstractions;
-using JWPlayer.MediaApiService;
-using JWPlayer.MediaApiService.Examples;
+using JWPlayer.MediaApi;
+using JWPlayer.MediaApi.Examples;
+using JWPlayer.MediaApi.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -19,7 +20,7 @@ builder.Services.AddSingleton<IExampleAuthTokenFactory>(x => x.GetRequiredServic
 builder.Services.AddSingleton<IRestClientFactory, RestClientFactory>();
 
 builder.Services.AddOptions<MediaApiOptions>().Bind(configuration.GetSection("MediaApiOptions"));
-builder.Services.AddSingleton<IMediaApiService, MediaApiService>();
+builder.Services.AddSingleton<IMediaResource, MediaResource>();
 
 var app = builder.Build();
 

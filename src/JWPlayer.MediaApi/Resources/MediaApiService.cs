@@ -2,17 +2,17 @@
 using JWPlayer.ApiGateway.Services;
 using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
-using JWPlayer.MediaApiService.Model;
-using JWPlayer.MediaApiService.Requests;
-using JWPlayer.MediaApiService.Resources;
+using JWPlayer.MediaApi.Model;
+using JWPlayer.MediaApi.Objects;
+using JWPlayer.MediaApi.Requests;
 using JWPlayer.Outcomes;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using System.Text.Json;
 
-namespace JWPlayer.MediaApiService;
+namespace JWPlayer.MediaApi.Resources;
 
-public class MediaApiService : IMediaApiService
+public class MediaResource : IMediaResource
 {
     internal static Endpoint CreateBroadcastLiveMedia(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast/", Method.PUT);
     internal static Endpoint CreateMedia(Alpha siteId) => new($"v2/sites/{siteId}/media/", Method.POST);
@@ -41,7 +41,7 @@ public class MediaApiService : IMediaApiService
         AllowTrailingCommas = true,
     };
 
-    public MediaApiService(
+    public MediaResource(
         IOptions<MediaApiOptions> options,
         IRestClientFactory restClientFactory,
         IAuthTokenFactory tokenFactory)
@@ -89,7 +89,7 @@ public class MediaApiService : IMediaApiService
         return DeserializeOrError<MediaCollectionSchema>(response, RequestDescription);
     }
 
-    public async Task<Result<MediaObjectSchema, JwErrorResponse>> UpdateMediaAsync(Alpha siteId, Alpha mediaId, MediaUpdateParams mediaUpdateParams)
+    public async Task<Result<MediaObjectSchema, JwErrorResponse>> UpdateMediaAsync(Alpha siteId, Alpha mediaId, MediaUpdateParameters mediaUpdateParams)
     {
         const string RequestDescription = "Update Media";
         var client = _restClientFactory.Create(_baseUrl);
@@ -128,7 +128,7 @@ public class MediaApiService : IMediaApiService
     {
         var tokenResult = await _tokenFactory.GetAuthTokenAsync();
         if (tokenResult.IsErr)
-            throw new MediaApiServiceException("Failed to get Auth Token", tokenResult.GetError());
+            throw new MediaApiException("Failed to get Auth Token", tokenResult.GetError());
 
         var token = tokenResult.GetValueOrDefault(string.Empty);
         var request = new RestRequest(endpoint.Resource, endpoint.Method);
@@ -188,7 +188,7 @@ public class MediaApiService : IMediaApiService
     {
         var isJwError = response.Content.TryGetJwErrorResponse(out var err);
         if (!isJwError)
-            throw new MediaApiServiceException($"Failed to deserialize error response for {requestDesc}, status code {response.StatusCode}, response content: {response.Content}", exception);
+            throw new MediaApiException($"Failed to deserialize error response for {requestDesc}, status code {response.StatusCode}, response content: {response.Content}", exception);
 
         return err;
     }

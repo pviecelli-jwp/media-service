@@ -1,8 +1,8 @@
 ﻿using JWPlayer.ApiGateway.Schemas;
-using JWPlayer.MediaApiService.Model;
+using JWPlayer.MediaApi.Model;
 using System.Text.Json.Serialization;
 
-namespace JWPlayer.MediaApiService.Resources;
+namespace JWPlayer.MediaApi.Objects;
 public class MediaObjectSchema : ObjectSchema<MediaMetadata>//, IEquatable<MediaObjectSchema>
 {
     /// <summary>

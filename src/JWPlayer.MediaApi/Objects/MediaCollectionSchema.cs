@@ -1,7 +1,7 @@
 ﻿using JWPlayer.ApiGateway.Schemas;
 using System.Text.Json.Serialization;
 
-namespace JWPlayer.MediaApiService.Resources;
+namespace JWPlayer.MediaApi.Objects;
 public class MediaCollectionSchema : CollectionSchema<MediaObjectSchema>
 {
     [JsonPropertyName("media")]

@@ -1,6 +1,6 @@
 ﻿using JWPlayer.Outcomes;
 
-namespace JWPlayer.MediaApiService.Examples;
+namespace JWPlayer.MediaApi.Examples;
 
 public class AuthTokenFactory : IExampleAuthTokenFactory
 {

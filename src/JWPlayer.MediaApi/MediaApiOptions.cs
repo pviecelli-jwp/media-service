@@ -1,4 +1,4 @@
-﻿namespace JWPlayer.MediaApiService
+﻿namespace JWPlayer.MediaApi
 {
     public class MediaApiOptions
     {

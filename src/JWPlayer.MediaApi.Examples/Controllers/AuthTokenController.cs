@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace JWPlayer.MediaApiService.Examples.Controllers;
+namespace JWPlayer.MediaApi.Examples.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class AuthTokenController(IExampleAuthTokenFactory exampleAuthTokenFactory) : ControllerBase

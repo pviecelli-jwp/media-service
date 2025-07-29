@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JWPlayer.MediaApiService\JWPlayer.MediaApiService.csproj" />
+    <ProjectReference Include="..\JWPlayer.MediaApi\JWPlayer.MediaApi.csproj" />
   </ItemGroup>
 
 </Project>

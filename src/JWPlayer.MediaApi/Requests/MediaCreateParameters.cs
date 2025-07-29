@@ -1,11 +1,13 @@
 ﻿using JWPlayer.ApiGateway.Schemas;
-using JWPlayer.MediaApiService.Model;
+using JWPlayer.MediaApi.Model;
 using System.Text.Json.Serialization;
 
-namespace JWPlayer.MediaApiService.Requests;
+namespace JWPlayer.MediaApi.Requests;
 
-public struct MediaUpdateParameters
+public struct MediaCreateParameters
 {
+    [JsonPropertyName("upload")]
+    public MediaUpload? Upload { get; set; }
     [JsonPropertyName("metadata")]
     public MediaMetadata? Metadata { get; set; }
     [JsonPropertyName("relationships")]

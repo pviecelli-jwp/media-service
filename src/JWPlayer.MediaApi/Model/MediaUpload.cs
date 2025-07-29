@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace JWPlayer.MediaApiService.Model;
+namespace JWPlayer.MediaApi.Model;
 
 public struct MediaUpload
 {
