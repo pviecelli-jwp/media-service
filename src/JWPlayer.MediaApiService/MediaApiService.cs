@@ -4,7 +4,6 @@ using JWPlayer.ApiGateway.Services.Abstractions;
 using JWPlayer.Identity;
 using JWPlayer.MediaApiService.Model;
 using JWPlayer.Outcomes;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using System.Text.Json;
@@ -26,7 +25,6 @@ public class MediaApiService : IMediaApiService
     internal static Endpoint CreateClip(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast_clip/", Method.POST);
     internal static Endpoint ReuploadMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/reupload/", Method.PUT);
 
-    private readonly ILogger<MediaApiService> _logger;
     private readonly IRestClientFactory _restClientFactory;
     private readonly IAuthTokenFactory _tokenFactory;
     protected readonly MediaApiOptions _mediaOptions;
@@ -42,12 +40,10 @@ public class MediaApiService : IMediaApiService
     };
 
     public MediaApiService(
-        ILogger<MediaApiService> logger,
         IOptions<MediaApiOptions> options,
         IRestClientFactory restClientFactory,
         IAuthTokenFactory tokenFactory)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _restClientFactory = restClientFactory ?? throw new ArgumentNullException(nameof(restClientFactory));
         _tokenFactory = tokenFactory ?? throw new ArgumentNullException(nameof(tokenFactory));
         _mediaOptions = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -64,7 +60,6 @@ public class MediaApiService : IMediaApiService
 
         request.AddParameter("application/json", body, ParameterType.RequestBody);
 
-        _logger.LogTrace(RequestDescription);
         var response = await client.ExecuteAsync(request);
 
         return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
@@ -76,7 +71,6 @@ public class MediaApiService : IMediaApiService
         var client = _restClientFactory.Create(_baseUrl);
         var request = await CreateRestRequestAsync(GetMedia(siteId, mediaId));
 
-        _logger.LogTrace(RequestDescription);
         var response = await client.ExecuteAsync(request);
 
         return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
@@ -88,7 +82,6 @@ public class MediaApiService : IMediaApiService
         var client = _restClientFactory.Create(_baseUrl);
         var request = await CreateRestRequestAsync(GetAllMedia(siteId));
 
-        _logger.LogTrace(RequestDescription);
         var response = await client.ExecuteAsync(request);
 
         return DeserializeOrError<MediaCollectionSchema>(response, RequestDescription);
@@ -103,7 +96,6 @@ public class MediaApiService : IMediaApiService
 
         request.AddParameter("application/json", body, ParameterType.RequestBody);
 
-        _logger.LogTrace(RequestDescription);
         var response = await client.ExecuteAsync(request);
 
         return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
@@ -116,7 +108,6 @@ public class MediaApiService : IMediaApiService
         var client = _restClientFactory.Create(_baseUrl);
         var request = await CreateRestRequestAsync(DeleteMedia(siteId, mediaId));
 
-        _logger.LogTrace(RequestDescription);
         var response = await client.ExecuteAsync(request);
 
         return DeserializeOrError(response, RequestDescription);
@@ -135,7 +126,8 @@ public class MediaApiService : IMediaApiService
     {
         var tokenResult = await _tokenFactory.GetAuthTokenAsync();
         if (tokenResult.IsErr)
-            _logger.LogError(tokenResult.GetError(), "Failed to get Auth Token");
+            throw new MediaApiServiceException("Failed to get Auth Token", tokenResult.GetError());
+
         var token = tokenResult.GetValueOrDefault(string.Empty);
         var request = new RestRequest(endpoint.Resource, endpoint.Method);
         request.AddHeader("Accept", "application/json");
@@ -153,12 +145,10 @@ public class MediaApiService : IMediaApiService
     /// <para> Trace: "{<paramref name="requestDesc"/>} was successful"</para>
     /// <para> Deserialization Error: "{<paramref name="requestDesc"/>}, status code {...}, response content {...}"</para>
     /// </param>
-    private Result<T, JwErrorResponse> DeserializeOrError<T>(IRestResponse response, string requestDesc)
+    private static Result<T, JwErrorResponse> DeserializeOrError<T>(IRestResponse response, string requestDesc)
     {
         if (response.IsSuccessful)
         {
-            _logger.LogTrace("{Request} was successful.", requestDesc);
-
             try
             {
                 var obj = JsonSerializer.Deserialize<T>(response.Content);
@@ -175,13 +165,10 @@ public class MediaApiService : IMediaApiService
         return HandleError(response, requestDesc);
     }
 
-    private Result<JwErrorResponse> DeserializeOrError(IRestResponse response, string requestDesc)
+    private static Result<JwErrorResponse> DeserializeOrError(IRestResponse response, string requestDesc)
     {
         if (response.IsSuccessful)
-        {
-            _logger.LogTrace("{Request} was successful.", requestDesc);
             return Result.Ok<JwErrorResponse>();
-        }
 
         return HandleError(response, requestDesc);
     }
@@ -195,11 +182,11 @@ public class MediaApiService : IMediaApiService
     /// <para> Deserialization Error: "{<paramref name="requestDesc"/>}, status code {...}, response content {...}"</para>
     /// </param>
     /// <param name="exception">Exception to be logged, in case there is one.</param>
-    private JwErrorResponse HandleError(IRestResponse response, string requestDesc, Exception? exception = null)
+    private static JwErrorResponse HandleError(IRestResponse response, string requestDesc, Exception? exception = null)
     {
         var isJwError = response.Content.TryGetJwErrorResponse(out var err);
         if (!isJwError)
-            _logger.LogError(exception, "{RequestDesc} failed with status code {StatusCode}, response content: {ResponseContent}", requestDesc, response.StatusCode, response.Content);
+            throw new MediaApiServiceException($"Failed to deserialize error response for {requestDesc}, status code {response.StatusCode}, response content: {response.Content}", exception);
 
         return err;
     }
