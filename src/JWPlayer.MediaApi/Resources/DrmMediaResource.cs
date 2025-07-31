@@ -11,9 +11,9 @@ using JsonObject = System.Text.Json.Nodes.JsonObject;
 
 namespace JWPlayer.MediaApi.Resources;
 public class DrmMediaResource(
+    IOptions<MediaApiOptions> mediaOptions,
     IRestClientFactory restClientFactory,
-    IAuthTokenFactory tokenFactory,
-    IOptions<MediaApiOptions> mediaOptions) : BaseResource(restClientFactory, tokenFactory, mediaOptions), IDrmMediaResource
+    IAuthTokenFactory tokenFactory) : BaseResource(restClientFactory, tokenFactory, mediaOptions), IDrmMediaResource
 {
     internal static Endpoint EnableDrmOnExternalMedia(Alpha siteId, Alpha mediaId) => new($"v2/sites/{siteId}/media/{mediaId}/enable_drm_on_external_media", Method.PUT);
     internal static Endpoint IsDrmEnabled(Alpha siteId) => new($"v2/sites/{siteId}/is_drm_enabled", Method.GET);
