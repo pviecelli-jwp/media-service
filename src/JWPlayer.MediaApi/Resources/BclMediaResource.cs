@@ -20,27 +20,47 @@ public class BclMediaResource(
     internal static Endpoint CaptureMedia(Alpha siteId, Alpha mediaId) => new($"internal/v2/sites/{siteId}/media/{mediaId}/live_broadcast_capture/", Method.PUT);
     internal static Endpoint CreateClip(Alpha siteId) => new($"internal/v2/sites/{siteId}/live_broadcast_clip/", Method.POST);
 
-    public async Task<Result<MediaObjectSchema, JwErrorResponse>> CreateBclMediaAsync(Alpha siteId, MediaCreateParameters mediaCreateParams)
+    public async Task<Result<MediaObjectSchema, JwErrorResponse>> CreateBclMediaAsync(Alpha siteId, MediaCreateParameters mediaCreateParameters)
     {
         const string RequestDescription = "Creating BCL Media";
-        var client = CreateBaseRestClient();
-        var body = JsonSerializer.Serialize(mediaCreateParams, _jsonOptions);
-        var request = await CreateRestRequestAsync(CreateBroadcastLiveMedia(siteId));
 
-        request.AddParameter("application/json", body, ParameterType.RequestBody);
+        var body = JsonSerializer.Serialize(mediaCreateParameters, _jsonOptions);
 
-        var response = await client.ExecuteAsync(request);
+        var response = await ExecuteRequestAsync(CreateBroadcastLiveMedia(siteId), body);
 
         return DeserializeOrError<MediaObjectSchema>(response, RequestDescription);
     }
 
-    public Task<Result<MediaObjectSchema, JwErrorResponse>> Capture(Alpha siteId, Alpha mediaId)
+    public async Task<Result<JwErrorResponse>> CaptureMediaAsync(Alpha siteId, Alpha mediaId, MediaCaptureParameters mediaCaptureParameters)
     {
-        throw new NotImplementedException();
+        const string RequestDescription = "Capturing Media";
+
+        var body = new JsonObject
+        {
+            ["upload"] = JsonSerializer.Serialize(mediaCaptureParameters, _jsonOptions)
+        };
+
+        var response = await ExecuteRequestAsync(CaptureMedia(siteId, mediaId), body);
+
+        return DeserializeOrError(response, RequestDescription);
     }
 
-    public Task<Result<MediaObjectSchema, JwErrorResponse>> CreateClip(Alpha siteId, Alpha mediaId)
+    public async Task<Result<JwErrorResponse>> CreateClipAsync(Alpha siteId, Alpha mediaId, MediaCreateClipParameters mediaCreateClipParameters)
     {
-        throw new NotImplementedException();
+        const string RequestDescription = "Creating Clip for media";
+
+        var body = new JsonObject
+        {
+            ["metadata"] = JsonSerializer.Serialize(mediaCreateClipParameters.Metadata, _jsonOptions),
+            ["upload"] = JsonSerializer.Serialize(mediaCreateClipParameters.CaptureParameters, _jsonOptions),
+            ["relationships"] = new JsonObject
+            {
+                ["media_id"] = mediaId.ToString()
+            }
+        };
+
+        var response = await ExecuteRequestAsync(CaptureMedia(siteId, mediaId), body);
+
+        return DeserializeOrError(response, RequestDescription);
     }
 }

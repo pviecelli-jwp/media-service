@@ -4,7 +4,6 @@ using JWPlayer.MediaApi.Model;
 using JWPlayer.MediaApi.Objects;
 using JWPlayer.MediaApi.Requests;
 using JWPlayer.Outcomes;
-using RestSharp;
 
 namespace JWPlayer.MediaApi.Resources;
 public interface IMediaResource
@@ -14,5 +13,5 @@ public interface IMediaResource
     Task<Result<MediaCollectionSchema, JwErrorResponse>> GetAllMediasAsync(Alpha siteId, int? page, int? pageLength, string? q, string? sort);
     Task<Result<MediaObjectSchema, JwErrorResponse>> UpdateMediaAsync(Alpha siteId, Alpha mediaId, MediaUpdateParameters mediaUpdateParams);
     Task<Result<JwErrorResponse>> DeleteMediaAsync(Alpha siteId, Alpha mediaId);
-    Task<IRestResponse> ReuploadMediaAsync(Alpha siteId, Alpha mediaId, MediaUpload upload);
+    Task<Result<MediaObjectSchema, JwErrorResponse>> ReuploadMediaAsync(Alpha siteId, Alpha mediaId, MediaUpload upload);
 }

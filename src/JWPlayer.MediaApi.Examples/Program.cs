@@ -21,6 +21,7 @@ builder.Services.AddSingleton<IRestClientFactory, RestClientFactory>();
 
 builder.Services.AddOptions<MediaApiOptions>().Bind(configuration.GetSection("MediaApiOptions"));
 builder.Services.AddSingleton<IMediaResource, MediaResource>();
+builder.Services.AddSingleton<IBclMediaResource, BclMediaResource>();
 
 var app = builder.Build();
 

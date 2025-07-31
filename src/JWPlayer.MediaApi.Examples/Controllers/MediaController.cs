@@ -5,10 +5,15 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace JWPlayer.MediaApi.Examples.Controllers;
-public class MediaController(ILogger<MediaController> logger, IMediaResource mediaResource) : Controller
+public class MediaController(
+    ILogger<MediaController> logger,
+    IMediaResource mediaResource,
+    IBclMediaResource bclMediaResource) : Controller
 {
     private readonly ILogger<MediaController> _logger = logger;
     private readonly IMediaResource _mediaResource = mediaResource;
+    private readonly IBclMediaResource _bclMediaResource = bclMediaResource;
+
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
@@ -55,6 +60,16 @@ public class MediaController(ILogger<MediaController> logger, IMediaResource med
         _logger.LogInformation("Getting media {MediaId} from site {SiteId}", mediaId, siteId);
 
         var result = await _mediaResource.DeleteMediaAsync(siteId, mediaId);
+        return result.IsOk
+            ? Ok()
+            : result.Error.ToObjectResult();
+    }
+
+    [HttpPut("sites/{siteId}/media/{mediaId}/capture")]
+    public async Task<IActionResult> CaptureMedia(string siteId, string mediaId, [FromBody] MediaCaptureParameters mediaCaptureParams)
+    {
+        _logger.LogInformation("Capturing media {MediaId} on site {SiteId} with parameters: {@MediaCaptureParams}", mediaId, siteId, mediaCaptureParams);
+        var result = await _bclMediaResource.CaptureMediaAsync(siteId, mediaId, mediaCaptureParams);
         return result.IsOk
             ? Ok()
             : result.Error.ToObjectResult();

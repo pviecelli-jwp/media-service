@@ -34,6 +34,17 @@ public abstract class BaseResource
         _baseUrl = _mediaOptions.BaseUrl;
     }
 
+    protected async Task<IRestResponse> ExecuteRequestAsync(Endpoint endpoint, object? body = null)
+    {
+        var client = CreateBaseRestClient();
+        var request = await CreateRestRequestAsync(endpoint);
+
+        if (body is not null)
+            request.AddParameter("application/json", body, ParameterType.RequestBody);
+
+        return await client.ExecuteAsync(request);
+    }
+
     protected IRestClient CreateBaseRestClient() => _restClientFactory.Create(_baseUrl);
 
     protected async Task<RestRequest> CreateRestRequestAsync(Endpoint endpoint)
