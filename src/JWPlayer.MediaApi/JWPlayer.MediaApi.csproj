@@ -4,7 +4,24 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>JWPlayer Media Api </Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>A Dotnet friendly way of interacting with the JWPlayer media API</Description>
+    <Copyright>JWPlayer</Copyright>
+    <PackageProjectUrl>https://github.com/jwplayer/jwplayer-dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jwplayer/jwplayer-dotnet</RepositoryUrl>
+	<AssemblyVersion>0.0.1</AssemblyVersion>
+    <Version>0.0.1</Version>
+	<FileVersion>0.0.1</FileVersion>  
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
